@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Frameworks Flow Diagrams</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap');
+
+  :root {
+    --bg: #07080f;
+    --panel: #0f1018;
+    --border: #1e2030;
+    --text: #e2e8f0;
+    --muted: #4a5568;
+    --c1: #00d4ff;
+    --c2: #ff6b35;
+    --c3: #a78bfa;
+    --c4: #10b981;
+    --c5: #f59e0b;
+    --c6: #f472b6;
+    --c7: #34d399;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    text-align: center;
+    padding: 2.5rem 1rem 1.5rem;
+    position: relative;
+  }
+  h1 {
+    font-size: clamp(1.4rem, 4vw, 2.6rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--c1) 0%, var(--c3) 50%, var(--c6) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 0.4rem;
+    letter-spacing: 0.1em;
+  }
+  header::after {
+    content: '';
+    display: block;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--c1), var(--c3), var(--c6), transparent);
+    margin-top: 1.5rem;
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1.2rem 1rem;
+    position: sticky;
+    top: 0;
+    background: rgba(7,8,15,0.95);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab-btn {
+    background: var(--panel);
+    border: 1.5px solid var(--border);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 20px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--text); border-color: var(--muted); }
+  .tab-btn.active {
+    color: #000;
+    font-weight: 700;
+    border-color: transparent;
+  }
+
+  /* ── PANELS ── */
+  .panel { display: none; }
+  .panel.active { display: flex; flex-direction: column; align-items: center; padding: 1.5rem 1rem 3rem; gap: 0; }
+
+  /* ── FRAMEWORK HEADER ── */
+  .fw-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    max-width: 640px;
+    width: 100%;
+  }
+  .fw-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+  }
+  .fw-desc {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 0.3rem;
+    line-height: 1.6;
+  }
+  .fw-tools {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-top: 0.8rem;
+  }
+  .tool-chip {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    padding: 3px 9px;
+    border-radius: 12px;
+    border: 1px solid;
+    opacity: 0.8;
+  }
+
+  /* ── NODES ── */
+  .node {
+    position: relative;
+    padding: 0.9rem 1.4rem;
+    border-radius: 10px;
+    border: 1.5px solid;
+    text-align: center;
+    width: 100%;
+    max-width: 560px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: default;
+    animation: fadeUp 0.4s ease both;
+  }
+  .node:hover { transform: translateY(-2px); }
+
+  .node-title { font-weight: 600; font-size: 0.95rem; }
+  .node-sub { font-size: 0.74rem; font-family: 'Space Mono', monospace; margin-top: 0.25rem; opacity: 0.7; line-height: 1.5; }
+
+  .badge {
+    position: absolute; top: -10px; right: 12px;
+    font-size: 0.58rem; font-family: 'Space Mono', monospace;
+    padding: 2px 7px; border-radius: 20px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+
+  /* Color variants */
+  .n-blue   { border-color: var(--c1); background: rgba(0,212,255,0.06); }
+  .n-blue   .node-title { color: var(--c1); }
+  .n-blue   .badge { background: var(--c1); color: #000; }
+
+  .n-orange { border-color: var(--c2); background: rgba(255,107,53,0.06); }
+  .n-orange .node-title { color: var(--c2); }
+  .n-orange .badge { background: var(--c2); color: #000; }
+
+  .n-purple { border-color: var(--c3); background: rgba(167,139,250,0.06); }
+  .n-purple .node-title { color: var(--c3); }
+  .n-purple .badge { background: var(--c3); color: #000; }
+
+  .n-green  { border-color: var(--c4); background: rgba(16,185,129,0.06); }
+  .n-green  .node-title { color: var(--c4); }
+  .n-green  .badge { background: var(--c4); color: #000; }
+
+  .n-yellow { border-color: var(--c5); background: rgba(245,158,11,0.06); }
+  .n-yellow .node-title { color: var(--c5); }
+  .n-yellow .badge { background: var(--c5); color: #000; }
+
+  .n-pink   { border-color: var(--c6); background: rgba(244,114,182,0.06); }
+  .n-pink   .node-title { color: var(--c6); }
+  .n-pink   .badge { background: var(--c6); color: #000; }
+
+  .n-teal   { border-color: var(--c7); background: rgba(52,211,153,0.06); }
+  .n-teal   .node-title { color: var(--c7); }
+  .n-teal   .badge { background: var(--c7); color: #000; }
+
+  /* hero node */
+  .node-hero {
+    border-width: 2px;
+    padding: 1.2rem 1.8rem;
+    border-radius: 14px;
+    animation: pulse-glow 3s ease-in-out infinite, fadeUp 0.4s ease both;
+  }
+  .node-hero.n-blue { box-shadow: 0 0 40px rgba(0,212,255,0.2); }
+  .node-hero.n-purple { box-shadow: 0 0 40px rgba(167,139,250,0.2); }
+  .node-hero.n-green { box-shadow: 0 0 40px rgba(16,185,129,0.2); }
+  .node-hero.n-orange { box-shadow: 0 0 40px rgba(255,107,53,0.2); }
+  .node-hero.n-pink { box-shadow: 0 0 40px rgba(244,114,182,0.2); }
+  .node-hero.n-yellow { box-shadow: 0 0 40px rgba(245,158,11,0.2); }
+  .node-hero .node-title { font-size: 1.1rem; font-weight: 800; }
+
+  /* ── ARROWS ── */
+  .arrow {
+    display: flex; flex-direction: column; align-items: center; margin: 2px 0;
+  }
+  .arrow-line { width: 2px; height: 24px; background: linear-gradient(180deg, var(--border), var(--muted)); }
+  .arrow-head { width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-top:8px solid var(--muted); }
+  .arrow-label { font-family:'Space Mono',monospace; font-size:0.62rem; color:var(--muted); margin-bottom:2px; letter-spacing:0.05em; }
+
+  /* ── TWO COL ── */
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; width:100%; max-width:560px; }
+  .two-col .node { max-width:100%; }
+
+  .three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.6rem; width:100%; max-width:660px; }
+  .three-col .node { max-width:100%; }
+
+  /* branch lines */
+  .branch-h { position:relative; width:100%; max-width:560px; height:28px; }
+  .branch-h .hl { position:absolute; top:0; left:25%; right:25%; height:2px; background:var(--border); }
+  .branch-h .vl { position:absolute; top:0; width:2px; height:28px; background:var(--border); }
+  .branch-h .vl.left { left:25%; }
+  .branch-h .vl.right { right:25%; }
+
+  .branch-h3 { position:relative; width:100%; max-width:660px; height:28px; }
+  .branch-h3 .hl { position:absolute; top:0; left:16.6%; right:16.6%; height:2px; background:var(--border); }
+  .branch-h3 .vl { position:absolute; top:0; width:2px; height:28px; background:var(--border); }
+
+  .merge { display:flex; justify-content:center; align-items:flex-start; width:100%; max-width:560px; position:relative; height:36px; }
+  .merge .ml { position:absolute; top:0; left:50%; transform:translateX(-1px); width:2px; height:28px; background:linear-gradient(180deg,var(--muted),var(--border)); }
+  .merge .ma { position:absolute; bottom:0; left:50%; transform:translateX(-6px); width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-top:8px solid var(--muted); }
+
+  .section-lbl {
+    font-size:0.6rem; font-family:'Space Mono',monospace; letter-spacing:0.15em; text-transform:uppercase;
+    color:var(--muted); margin:0.8rem 0 0.35rem; border-left:2px solid var(--border); padding-left:0.6rem;
+    align-self:flex-start; margin-left:max(0px, calc((100% - 560px)/2));
+  }
+
+  .info-row { display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center; width:100%; max-width:680px; padding:0.6rem 0; }
+  .chip { background:var(--panel); border:1px solid var(--border); border-radius:6px; padding:0.35rem 0.7rem; font-size:0.68rem; font-family:'Space Mono',monospace; color:var(--muted); }
+  .chip strong { color:var(--text); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes pulse-glow { 0%,100%{opacity:1} 50%{opacity:0.85} }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>AI Frameworks — Flow Diagrams</h1>
+  <p class="sub">// RAG · Fine-Tuning · RLHF · Agent · Diffusion · Embeddings · LangChain</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="rag" style="--tc:var(--c1)">🔍 RAG</button>
+  <button class="tab-btn" data-tab="finetune">🔧 Fine-Tuning</button>
+  <button class="tab-btn" data-tab="rlhf">🎯 RLHF</button>
+  <button class="tab-btn" data-tab="agent">🤖 AI Agent</button>
+  <button class="tab-btn" data-tab="diffusion">🎨 Diffusion</button>
+  <button class="tab-btn" data-tab="embed">📐 Embeddings</button>
+  <button class="tab-btn" data-tab="langchain">⛓ LangChain</button>
+</div>
+
+<!-- ═══════════════════════════ RAG ═══════════════════════════ -->
+<div class="panel active" id="tab-rag">
+  <div class="fw-header">
+    <div class="fw-title" style="color:var(--c1)">Retrieval-Augmented Generation (RAG)</div>
+    <div class="fw-desc">Combines a knowledge base with an LLM — the model doesn't memorize facts, it looks them up at query time.</div>
+    <div class="fw-tools">
+      <span class="tool-chip" style="color:var(--c1);border-color:var(--c1)">LangChain</span>
+      <span class="tool-chip" style="color:var(--c1);border-color:var(--c1)">LlamaIndex</span>
+      <span class="tool-chip" style="color:var(--c1);border-color:var(--c1)">ChromaDB</span>
+      <span class="tool-chip" style="color:var(--c1);border-color:var(--c1)">Pinecone</span>
+      <span class="tool-chip" style="color:var(--c1);border-color:var(--c1)">FAISS</span>
+      <span class="tool-chip" style="color:var(--c1);border-color:var(--c1)">Weaviate</span>
+    </div>
+  </div>
+
+  <!-- Indexing Phase -->
+  <div class="section-lbl">① Offline Indexing Phase</div>
+  <div class="node n-orange"><span class="badge">source</span>
+    <div class="node-title">Raw Documents</div>
+    <div class="node-sub">PDFs · Web pages · Notion · Confluence · SQL · APIs</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">chunk & clean</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-orange"><span class="badge">chunking</span>
+    <div class="node-title">Text Chunker</div>
+    <div class="node-sub">RecursiveCharacterTextSplitter · chunk_size=512 · overlap=64</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">embed each chunk</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-purple"><span class="badge">encoder</span>
+    <div class="node-title">Embedding Model</div>
+    <div class="node-sub">text-embedding-3-small · all-MiniLM-L6-v2 · BGE · Cohere Embed</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">float32 vectors [1536d]</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-blue node-hero"><span class="badge">store</span>
+    <div class="node-title">Vector Database</div>
+    <div class="node-sub">Pinecone · ChromaDB · FAISS · Weaviate · pgvector<br>Stores: (chunk_text, embedding, metadata)</div>
+  </div>
+
+  <!-- Query Phase -->
+  <div class="section-lbl">② Online Query Phase</div>
+  <div class="node n-green"><span class="badge">user</span>
+    <div class="node-title">User Query</div>
+    <div class="node-sub">"What did the Q3 earnings report say about revenue?"</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">embed query</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-purple"><span class="badge">retriever</span>
+    <div class="node-title">Semantic Search (ANN)</div>
+    <div class="node-sub">cosine_similarity(q_vec, doc_vecs) → top-k=5 chunks<br>Optional: BM25 hybrid + reranker (Cohere, ColBERT)</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">retrieved context</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-yellow"><span class="badge">prompt</span>
+    <div class="node-title">Prompt Assembly</div>
+    <div class="node-sub">System prompt + [retrieved chunks] + user query → final prompt string</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">augmented prompt</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-blue node-hero"><span class="badge">generate</span>
+    <div class="node-title">LLM Generation</div>
+    <div class="node-sub">GPT-4 · Claude · Gemini · LLaMA<br>Answers using only the retrieved context — no hallucination</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">grounded answer</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-green"><span class="badge">output</span>
+    <div class="node-title">Response + Citations</div>
+    <div class="node-sub">Answer text with source references · chunk IDs · confidence scores</div>
+  </div>
+
+  <div style="height:1rem"></div>
+  <div class="info-row">
+    <div class="chip"><strong>vs Fine-tuning</strong> No retraining needed</div>
+    <div class="chip"><strong>Latency</strong> ~200-800ms retrieval</div>
+    <div class="chip"><strong>Use case</strong> Enterprise Q&A, docs search</div>
+    <div class="chip"><strong>Hallucination</strong> ↓ 60-80%</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ FINE-TUNING ═══════════════════════════ -->
+<div class="panel" id="tab-finetune">
+  <div class="fw-header">
+    <div class="fw-title" style="color:var(--c4)">Fine-Tuning (LoRA / Full)</div>
+    <div class="fw-desc">Adapts a pre-trained LLM to a specific task or domain by training on curated examples. LoRA trains only a tiny fraction of parameters.</div>
+    <div class="fw-tools">
+      <span class="tool-chip" style="color:var(--c4);border-color:var(--c4)">HuggingFace PEFT</span>
+      <span class="tool-chip" style="color:var(--c4);border-color:var(--c4)">LoRA / QLoRA</span>
+      <span class="tool-chip" style="color:var(--c4);border-color:var(--c4)">Axolotl</span>
+      <span class="tool-chip" style="color:var(--c4);border-color:var(--c4)">Unsloth</span>
+      <span class="tool-chip" style="color:var(--c4);border-color:var(--c4)">TRL</span>
+    </div>
+  </div>
+
+  <div class="section-lbl">① Dataset Preparation</div>
+  <div class="node n-orange"><span class="badge">data</span>
+    <div class="node-title">Task-Specific Dataset</div>
+    <div class="node-sub">instruction-response pairs · JSONL format · 1K–100K examples</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">format + tokenize</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-orange"><span class="badge">format</span>
+    <div class="node-title">Chat Template Formatting</div>
+    <div class="node-sub">{"instruction": "...", "output": "..."} → [INST] … [/INST] …</div>
+  </div>
+
+  <div class="section-lbl">② LoRA Adapter Injection</div>
+  <div class="node n-purple node-hero"><span class="badge">frozen</span>
+    <div class="node-title">Pre-trained LLM (Frozen Weights)</div>
+    <div class="node-sub">LLaMA-3 · Mistral · Gemma · Phi-3 — weights W stay fixed</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">inject adapters</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-blue node-hero"><span class="badge">lora</span>
+    <div class="node-title">LoRA: W' = W + α·(A×B)</div>
+    <div class="node-sub">A∈ℝ^(d×r), B∈ℝ^(r×k), rank r=8-64 · Only A,B are trained<br>Param reduction: 10,000× fewer trainable params</div>
+  </div>
+
+  <div class="section-lbl">③ Training Loop</div>
+  <div class="node n-green"><span class="badge">forward</span>
+    <div class="node-title">Forward Pass</div>
+    <div class="node-sub">Input tokens → model(W + ΔW) → logits per token</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">cross-entropy loss</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-green"><span class="badge">loss</span>
+    <div class="node-title">Next-Token Prediction Loss</div>
+    <div class="node-sub">L = −Σ log P(token_t | token_{1..t-1})</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">backprop only through A,B</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-teal"><span class="badge">update</span>
+    <div class="node-title">Optimizer Updates LoRA Matrices</div>
+    <div class="node-sub">AdamW · lr=2e-4 · gradient_checkpointing · bf16 mixed precision</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">merge or keep separate</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-green"><span class="badge">output</span>
+    <div class="node-title">Fine-Tuned Model</div>
+    <div class="node-sub">Merge: W_final = W + A×B · Or serve adapter separately via PEFT</div>
+  </div>
+
+  <div style="height:1rem"></div>
+  <div class="info-row">
+    <div class="chip"><strong>LoRA params</strong> ~0.1-1% of full model</div>
+    <div class="chip"><strong>QLoRA</strong> 4-bit quantized base + LoRA</div>
+    <div class="chip"><strong>GPU VRAM</strong> 8-24GB for 7B models</div>
+    <div class="chip"><strong>Training time</strong> hours vs days (full)</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ RLHF ═══════════════════════════ -->
+<div class="panel" id="tab-rlhf">
+  <div class="fw-header">
+    <div class="fw-title" style="color:var(--c6)">RLHF — Reinforcement Learning from Human Feedback</div>
+    <div class="fw-desc">Aligns LLM outputs with human preferences. Powers ChatGPT, Claude, Gemini's helpful/harmless behavior.</div>
+    <div class="fw-tools">
+      <span class="tool-chip" style="color:var(--c6);border-color:var(--c6)">TRL (HuggingFace)</span>
+      <span class="tool-chip" style="color:var(--c6);border-color:var(--c6)">PPO</span>
+      <span class="tool-chip" style="color:var(--c6);border-color:var(--c6)">DPO</span>
+      <span class="tool-chip" style="color:var(--c6);border-color:var(--c6)">DeepSpeed</span>
+      <span class="tool-chip" style="color:var(--c6);border-color:var(--c6)">OpenRLHF</span>
+    </div>
+  </div>
+
+  <div class="section-lbl">① SFT — Supervised Fine-Tuning</div>
+  <div class="node n-orange"><span class="badge">step 1</span>
+    <div class="node-title">SFT on Demonstration Data</div>
+    <div class="node-sub">Human-written ideal responses → fine-tune base LLM → SFT model</div>
+  </div>
+
+  <div class="section-lbl">② Reward Model Training</div>
+  <div class="node n-pink node-hero"><span class="badge">step 2</span>
+    <div class="node-title">Human Preference Collection</div>
+    <div class="node-sub">Same prompt → 2 model outputs → human labels: "A is better than B"<br>Collect 10K–100K comparison pairs</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">train reward model</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-pink"><span class="badge">reward</span>
+    <div class="node-title">Reward Model (RM)</div>
+    <div class="node-sub">RM(prompt, response) → scalar score r<br>Loss: L = −log σ(r_chosen − r_rejected)</div>
+  </div>
+
+  <div class="section-lbl">③ RL Fine-Tuning with PPO</div>
+  <div class="node n-purple"><span class="badge">actor</span>
+    <div class="node-title">Policy (LLM Actor)</div>
+    <div class="node-sub">Generates response y ~ π_θ(y|x)</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">score response</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="two-col">
+    <div class="node n-pink" style="animation-delay:0.1s"><span class="badge">reward</span>
+      <div class="node-title">Reward Signal</div>
+      <div class="node-sub">r = RM(x, y) − β·KL(π_θ || π_ref)</div>
+    </div>
+    <div class="node n-blue" style="animation-delay:0.2s"><span class="badge">critic</span>
+      <div class="node-title">Value Function (Critic)</div>
+      <div class="node-sub">Estimates expected return V(s)</div>
+    </div>
+  </div>
+  <div class="merge"><div class="ml"></div><div class="ma"></div></div>
+  <div class="node n-purple node-hero"><span class="badge">ppo</span>
+    <div class="node-title">PPO Gradient Update</div>
+    <div class="node-sub">L_CLIP = E[min(r_t·A_t, clip(r_t,1-ε,1+ε)·A_t)]<br>Update π_θ to maximize reward while staying close to π_ref</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">aligned policy</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-green"><span class="badge">output</span>
+    <div class="node-title">RLHF-Aligned LLM</div>
+    <div class="node-sub">Helpful · Harmless · Honest — ChatGPT / Claude behavior</div>
+  </div>
+
+  <div style="height:1rem"></div>
+  <div class="info-row">
+    <div class="chip"><strong>DPO</strong> Skip RM, train directly on pairs</div>
+    <div class="chip"><strong>KL penalty β</strong> prevents reward hacking</div>
+    <div class="chip"><strong>RLAIF</strong> AI feedback replaces humans</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ AGENT ═══════════════════════════ -->
+<div class="panel" id="tab-agent">
+  <div class="fw-header">
+    <div class="fw-title" style="color:var(--c5)">AI Agent Framework</div>
+    <div class="fw-desc">LLM as a reasoning engine that plans, uses tools, observes results, and iterates until the goal is achieved.</div>
+    <div class="fw-tools">
+      <span class="tool-chip" style="color:var(--c5);border-color:var(--c5)">LangChain Agents</span>
+      <span class="tool-chip" style="color:var(--c5);border-color:var(--c5)">AutoGPT</span>
+      <span class="tool-chip" style="color:var(--c5);border-color:var(--c5)">CrewAI</span>
+      <span class="tool-chip" style="color:var(--c5);border-color:var(--c5)">AutoGen</span>
+      <span class="tool-chip" style="color:var(--c5);border-color:var(--c5)">LangGraph</span>
+      <span class="tool-chip" style="color:var(--c5);border-color:var(--c5)">ReAct</span>
+    </div>
+  </div>
+
+  <div class="node n-orange"><span class="badge">input</span>
+    <div class="node-title">User Goal / Task</div>
+    <div class="node-sub">"Research top 5 AI papers from 2024 and write a summary report"</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">send to planner</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+  <div class="node n-yellow node-hero"><span class="badge">brain</span>
+    <div class="node-title">LLM Planner (ReAct Loop)</div>
+    <div class="node-sub">Thought → Action → Observation → Thought → …<br>Chain-of-Thought reasoning over conversation history</div>
+  </div>
+
+  <div class="arrow"><div class="arrow-label">select tool</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+  <div class="section-lbl">Tool Execution Layer</div>
+  <div class="three-col">
+    <div class="node n-blue" style="animation-delay:0.05s"><span class="badge">search</span>
+      <div class="node-title">Web Search</div>
+      <div class="node-sub">Tavily · SerpAPI · Bing</div>
+    </div>
+    <div class="node n-green" style="animation-delay:0.1s"><span class="badge">code</span>
+      <div class="node-title">Code Executor</div>
+      <div class="node-sub">Python REPL · Jupyter</div>
+    </div>
+    <div class="node n-purple" style="animation-delay:0.15s"><span class="badge">memory</span>
+      <div class="node-title">Vector Memory</div>
+      <div class="node-sub">Recall past context</div>
+    </div>
+  </div>
+  <div class="branch-h3" style="max-width:660px">
+    <div class="hl"></div>
+    <div class="vl" style="left:16.6%"></div>
+    <div class="vl" style="left:50%"></div>
+    <div class="vl" style="right:16.6%"></div>
+  </div>
+  <div class="three-col">
+    <div class="node n-pink" style="animation-delay:0.2s"><span class="badge">files</span>
+      <div class="node-title">File R/W</div>
+      <div class="node-sub">Read PDFs, write docs</div>
+    </div>
+    <div class="node n-orange" style="animation-delay:0.25s"><span class="badge">api</span>
+      <div class="node-title">External APIs</div>
+      <div class="node-sub">Slack · Email · DB</div>
+    </div>
+    <div class="node n-teal" style="animation-delay:0.3s"><span class="badge">rag</span>
+      <div class="node-title">RAG Retriever</div>
+      <div class="node-sub">Internal knowledge</div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-label">tool result (observation)</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-yellow"><span class="badge">observe</span>
+    <div class="node-title">Observation → Update Context</div>
+    <div class="node-sub">Tool output appended to scratchpad · LLM re-reasons · decides next action</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">goal reached?</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-green"><span class="badge">done</span>
+    <div class="node-title">Final Answer / Artifact</div>
+    <div class="node-sub">Report · Code · Email · Decision — returned to user</div>
+  </div>
+
+  <div style="height:1rem"></div>
+  <div class="info-row">
+    <div class="chip"><strong>ReAct</strong> Reason + Act interleaved</div>
+    <div class="chip"><strong>Multi-agent</strong> CrewAI orchestrates teams</div>
+    <div class="chip"><strong>Max steps</strong> prevents infinite loops</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ DIFFUSION ═══════════════════════════ -->
+<div class="panel" id="tab-diffusion">
+  <div class="fw-header">
+    <div class="fw-title" style="color:var(--c3)">Diffusion Models (Stable Diffusion / DALL·E)</div>
+    <div class="fw-desc">Learns to reverse a noise process — training adds noise to images, inference removes it guided by text.</div>
+    <div class="fw-tools">
+      <span class="tool-chip" style="color:var(--c3);border-color:var(--c3)">Diffusers (HF)</span>
+      <span class="tool-chip" style="color:var(--c3);border-color:var(--c3)">PyTorch</span>
+      <span class="tool-chip" style="color:var(--c3);border-color:var(--c3)">JAX/Flax</span>
+      <span class="tool-chip" style="color:var(--c3);border-color:var(--c3)">CLIP</span>
+      <span class="tool-chip" style="color:var(--c3);border-color:var(--c3)">U-Net / DiT</span>
+    </div>
+  </div>
+
+  <div class="section-lbl">① Training: Forward Diffusion (Add Noise)</div>
+  <div class="node n-orange"><span class="badge">clean</span>
+    <div class="node-title">Real Image x₀</div>
+    <div class="node-sub">Original photo from dataset (e.g., LAION-5B)</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">T noise steps</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-purple"><span class="badge">noise</span>
+    <div class="node-title">Noising Schedule (Markov Chain)</div>
+    <div class="node-sub">xₜ = √ᾱₜ·x₀ + √(1−ᾱₜ)·ε, ε~N(0,I) · T=1000 steps</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">predict added noise</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-purple node-hero"><span class="badge">denoiser</span>
+    <div class="node-title">U-Net / DiT: ε_θ(xₜ, t, c)</div>
+    <div class="node-sub">Predicts noise ε at timestep t conditioned on text c<br>Loss: L = ||ε − ε_θ(xₜ, t, c)||²</div>
+  </div>
+
+  <div class="section-lbl">② Text Conditioning (CLIP Encoder)</div>
+  <div class="node n-blue"><span class="badge">clip</span>
+    <div class="node-title">Text Prompt → CLIP Encoder</div>
+    <div class="node-sub">"a fox in neon city" → 77×768 text embeddings<br>Cross-attention in U-Net guides denoising toward prompt</div>
+  </div>
+
+  <div class="section-lbl">③ Inference: Reverse Diffusion (Remove Noise)</div>
+  <div class="node n-pink"><span class="badge">start</span>
+    <div class="node-title">Pure Gaussian Noise xₜ</div>
+    <div class="node-sub">Random z ~ N(0,I) — latent space (64×64 for SD)</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">T → 0 (DDPM/DDIM sampler)</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-blue"><span class="badge">sampler</span>
+    <div class="node-title">Iterative Denoising (DDIM 50 steps)</div>
+    <div class="node-sub">x_{t-1} = f(xₜ, ε_θ(xₜ,t,c)) — CFG scale guides prompt adherence</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">decode latent</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-green"><span class="badge">vae</span>
+    <div class="node-title">VAE Decoder → Final Image</div>
+    <div class="node-sub">Latent 64×64 → pixel space 512×512 (or 1024×1024)</div>
+  </div>
+
+  <div style="height:1rem"></div>
+  <div class="info-row">
+    <div class="chip"><strong>CFG scale</strong> 7–12 balances quality vs diversity</div>
+    <div class="chip"><strong>SDXL</strong> 2 U-Nets in cascade</div>
+    <div class="chip"><strong>DiT</strong> Transformer replaces U-Net</div>
+    <div class="chip"><strong>ControlNet</strong> adds pose/edge guidance</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ EMBEDDINGS ═══════════════════════════ -->
+<div class="panel" id="tab-embed">
+  <div class="fw-header">
+    <div class="fw-title" style="color:var(--c7)">Embedding Pipeline</div>
+    <div class="fw-desc">Converts any content (text, image, audio) into dense vector representations for search, clustering, and similarity tasks.</div>
+    <div class="fw-tools">
+      <span class="tool-chip" style="color:var(--c7);border-color:var(--c7)">Sentence-Transformers</span>
+      <span class="tool-chip" style="color:var(--c7);border-color:var(--c7)">OpenAI Embeddings</span>
+      <span class="tool-chip" style="color:var(--c7);border-color:var(--c7)">Cohere</span>
+      <span class="tool-chip" style="color:var(--c7);border-color:var(--c7)">BGE / E5</span>
+      <span class="tool-chip" style="color:var(--c7);border-color:var(--c7)">FAISS</span>
+    </div>
+  </div>
+
+  <div class="section-lbl">① Encoding</div>
+  <div class="node n-orange"><span class="badge">input</span>
+    <div class="node-title">Raw Content</div>
+    <div class="node-sub">Text · Images · Audio · Code · Documents</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">tokenize</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-teal node-hero"><span class="badge">encoder</span>
+    <div class="node-title">Encoder Model (BERT / Transformer)</div>
+    <div class="node-sub">Forward pass → [CLS] token pooled · mean pooling over tokens<br>Output: dense vector ∈ ℝ^d (d=384, 768, 1536, 3072)</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">normalize → unit sphere</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-blue"><span class="badge">vector</span>
+    <div class="node-title">Embedding Vector [1×1536]</div>
+    <div class="node-sub">[0.023, -0.417, 0.881, …] — semantically similar text → nearby vectors</div>
+  </div>
+
+  <div class="section-lbl">② Training Objective (Contrastive)</div>
+  <div class="node n-purple"><span class="badge">pairs</span>
+    <div class="node-title">Positive / Negative Pairs</div>
+    <div class="node-sub">(query, relevant_doc) → positive · (query, random_doc) → negative</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">contrastive loss</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-purple"><span class="badge">loss</span>
+    <div class="node-title">InfoNCE / Triplet Loss</div>
+    <div class="node-sub">L = −log[exp(sim(q,d+)/τ) / Σexp(sim(q,dᵢ)/τ)]<br>Pull positives together, push negatives apart</div>
+  </div>
+
+  <div class="section-lbl">③ Downstream Uses</div>
+  <div class="two-col">
+    <div class="node n-green" style="animation-delay:0.1s"><span class="badge">search</span>
+      <div class="node-title">Semantic Search</div>
+      <div class="node-sub">ANN lookup in FAISS · Pinecone · ElasticSearch kNN</div>
+    </div>
+    <div class="node n-yellow" style="animation-delay:0.2s"><span class="badge">cluster</span>
+      <div class="node-title">Clustering / Classification</div>
+      <div class="node-sub">k-means · cosine similarity matrix · zero-shot classification</div>
+    </div>
+  </div>
+
+  <div style="height:1rem"></div>
+  <div class="info-row">
+    <div class="chip"><strong>Cosine sim</strong> dot product of unit vectors</div>
+    <div class="chip"><strong>Matryoshka</strong> truncatable embeddings</div>
+    <div class="chip"><strong>Bi-encoder</strong> fast · cross-encoder: accurate</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ LANGCHAIN ═══════════════════════════ -->
+<div class="panel" id="tab-langchain">
+  <div class="fw-header">
+    <div class="fw-title" style="color:var(--c2)">LangChain / LangGraph Orchestration</div>
+    <div class="fw-desc">Framework to chain LLM calls, tools, memory and retrieval into composable pipelines (chains) and stateful graphs.</div>
+    <div class="fw-tools">
+      <span class="tool-chip" style="color:var(--c2);border-color:var(--c2)">LangChain</span>
+      <span class="tool-chip" style="color:var(--c2);border-color:var(--c2)">LangGraph</span>
+      <span class="tool-chip" style="color:var(--c2);border-color:var(--c2)">LangSmith</span>
+      <span class="tool-chip" style="color:var(--c2);border-color:var(--c2)">LCEL</span>
+      <span class="tool-chip" style="color:var(--c2);border-color:var(--c2)">Vector Stores</span>
+    </div>
+  </div>
+
+  <div class="node n-orange"><span class="badge">user</span>
+    <div class="node-title">User Input</div>
+    <div class="node-sub">Raw question or task string</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">LCEL pipe |</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+  <div class="section-lbl">② Runnable Chain (LCEL)</div>
+  <div class="node n-orange node-hero"><span class="badge">chain</span>
+    <div class="node-title">chain = retriever | prompt | llm | parser</div>
+    <div class="node-sub">Each component is a Runnable — composable via pipe operator<br>Supports streaming, batching, async, fallbacks</div>
+  </div>
+
+  <div class="section-lbl">③ Chain Components</div>
+  <div class="two-col">
+    <div class="node n-blue" style="animation-delay:0.05s"><span class="badge">retriever</span>
+      <div class="node-title">Retriever</div>
+      <div class="node-sub">VectorStoreRetriever · BM25 · MultiQuery · SelfQuery</div>
+    </div>
+    <div class="node n-purple" style="animation-delay:0.1s"><span class="badge">memory</span>
+      <div class="node-title">Memory</div>
+      <div class="node-sub">ConversationBufferMemory · SummaryMemory · VectorMemory</div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="node n-yellow" style="animation-delay:0.15s"><span class="badge">prompt</span>
+      <div class="node-title">Prompt Template</div>
+      <div class="node-sub">ChatPromptTemplate · FewShotPromptTemplate · MessagesPlaceholder</div>
+    </div>
+    <div class="node n-green" style="animation-delay:0.2s"><span class="badge">tools</span>
+      <div class="node-title">Tool Binding</div>
+      <div class="node-sub">llm.bind_tools([search, calc, db]) → function calling</div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-label">invoke(input)</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-orange"><span class="badge">llm</span>
+    <div class="node-title">LLM Call</div>
+    <div class="node-sub">ChatOpenAI · ChatAnthropic · ChatGoogleGenerativeAI · Ollama</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">parse output</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-teal"><span class="badge">parser</span>
+    <div class="node-title">Output Parser</div>
+    <div class="node-sub">StrOutputParser · PydanticOutputParser · JsonOutputParser</div>
+  </div>
+
+  <div class="section-lbl">④ LangGraph — Stateful Multi-Step Flows</div>
+  <div class="node n-purple node-hero"><span class="badge">graph</span>
+    <div class="node-title">LangGraph StateGraph</div>
+    <div class="node-sub">Nodes: Python functions · Edges: conditional routing<br>State: TypedDict shared across nodes · supports cycles (agent loops)</div>
+  </div>
+  <div class="arrow"><div class="arrow-label">trace everything</div><div class="arrow-line"></div><div class="arrow-head"></div></div>
+  <div class="node n-green"><span class="badge">observe</span>
+    <div class="node-title">LangSmith Tracing & Evaluation</div>
+    <div class="node-sub">Logs every LLM call · latency · tokens · evals · A/B testing prompts</div>
+  </div>
+
+  <div style="height:1rem"></div>
+  <div class="info-row">
+    <div class="chip"><strong>LCEL</strong> lazy evaluation, streaming first</div>
+    <div class="chip"><strong>LangGraph</strong> replaces AgentExecutor</div>
+    <div class="chip"><strong>v0.3</strong> Pydantic v2, async native</div>
+  </div>
+</div>
+
+<script>
+  const btns = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.panel');
+  const colors = {
+    rag: 'var(--c1)', finetune: 'var(--c4)', rlhf: 'var(--c6)',
+    agent: 'var(--c5)', diffusion: 'var(--c3)', embed: 'var(--c7)', langchain: 'var(--c2)'
+  };
+
+  btns.forEach(btn => {
+    const id = btn.dataset.tab;
+    btn.style.setProperty('--tc', colors[id]);
+    btn.addEventListener('click', () => {
+      btns.forEach(b => b.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + id).classList.add('active');
+    });
+  });
+
+  // Apply active tab color
+  document.querySelectorAll('.tab-btn.active').forEach(b => {
+    b.style.background = colors[b.dataset.tab];
+  });
+
+  // Update on click
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      btns.forEach(b => {
+        b.style.background = b.classList.contains('active') ? colors[b.dataset.tab] : '';
+        b.style.color = b.classList.contains('active') ? '#000' : '';
+      });
+    });
+  });
+</script>
+</body>
+</html>

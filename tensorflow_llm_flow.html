@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TensorFlow in LLM Training</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --panel: #12121a;
+    --border: #2a2a3f;
+    --accent1: #00d4ff;
+    --accent2: #ff6b35;
+    --accent3: #7c3aed;
+    --accent4: #10b981;
+    --accent5: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #64748b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  header {
+    text-align: center;
+    padding: 3rem 2rem 1.5rem;
+    position: relative;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 80%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent1), var(--accent3), transparent);
+  }
+
+  h1 {
+    font-size: clamp(1.6rem, 4vw, 2.8rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent1), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    letter-spacing: 0.1em;
+  }
+
+  .legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1.2rem 2rem;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+
+  .diagram {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 1rem 3rem;
+    gap: 0;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* ---- NODES ---- */
+  .node {
+    position: relative;
+    padding: 1rem 1.6rem;
+    border-radius: 10px;
+    border: 1.5px solid;
+    text-align: center;
+    width: 100%;
+    max-width: 560px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: default;
+  }
+
+  .node:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+
+  .node-title {
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+  }
+
+  .node-sub {
+    font-size: 0.78rem;
+    font-family: 'Space Mono', monospace;
+    margin-top: 0.3rem;
+    opacity: 0.75;
+  }
+
+  .node-badge {
+    position: absolute;
+    top: -10px; right: 12px;
+    font-size: 0.6rem;
+    font-family: 'Space Mono', monospace;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Color themes */
+  .blue { border-color: var(--accent1); background: rgba(0,212,255,0.06); }
+  .blue .node-title { color: var(--accent1); }
+  .blue .node-badge { background: var(--accent1); color: #000; }
+
+  .orange { border-color: var(--accent2); background: rgba(255,107,53,0.06); }
+  .orange .node-title { color: var(--accent2); }
+  .orange .node-badge { background: var(--accent2); color: #000; }
+
+  .purple { border-color: var(--accent3); background: rgba(124,58,237,0.08); }
+  .purple .node-title { color: #a78bfa; }
+  .purple .node-badge { background: var(--accent3); color: #fff; }
+
+  .green { border-color: var(--accent4); background: rgba(16,185,129,0.06); }
+  .green .node-title { color: var(--accent4); }
+  .green .node-badge { background: var(--accent4); color: #000; }
+
+  .yellow { border-color: var(--accent5); background: rgba(245,158,11,0.06); }
+  .yellow .node-title { color: var(--accent5); }
+  .yellow .node-badge { background: var(--accent5); color: #000; }
+
+  /* TENSORFLOW special node */
+  .tf-node {
+    border: 2px solid var(--accent1);
+    background: linear-gradient(135deg, rgba(0,212,255,0.12), rgba(124,58,237,0.12));
+    padding: 1.4rem 2rem;
+    border-radius: 14px;
+    max-width: 560px;
+    width: 100%;
+    position: relative;
+    box-shadow: 0 0 40px rgba(0,212,255,0.15), 0 0 80px rgba(124,58,237,0.1);
+  }
+
+  .tf-node .node-title {
+    font-size: 1.2rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, var(--accent1), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .tf-icon {
+    font-size: 1.8rem;
+    display: block;
+    margin-bottom: 0.3rem;
+  }
+
+  /* ARROWS */
+  .arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 2px 0;
+  }
+
+  .arrow-line {
+    width: 2px;
+    height: 28px;
+    background: linear-gradient(180deg, var(--border), var(--muted));
+  }
+
+  .arrow-head {
+    width: 0; height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid var(--muted);
+  }
+
+  .arrow-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-bottom: 2px;
+    letter-spacing: 0.05em;
+  }
+
+  /* BRANCH: forward + backward */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    width: 100%;
+    max-width: 560px;
+  }
+
+  .two-col .node { max-width: 100%; }
+
+  /* CONNECTOR between two-col and main */
+  .merge-arrow {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+    max-width: 560px;
+    position: relative;
+    height: 40px;
+  }
+
+  .merge-line {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-1px);
+    width: 2px; height: 32px;
+    background: linear-gradient(180deg, var(--muted), var(--border));
+  }
+
+  .merge-arrowhead {
+    position: absolute;
+    bottom: 0; left: 50%;
+    transform: translateX(-6px);
+    width: 0; height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid var(--muted);
+  }
+
+  /* HORIZONTAL branch lines */
+  .branch-connector {
+    width: 100%;
+    max-width: 560px;
+    position: relative;
+    height: 30px;
+  }
+
+  .branch-h-line {
+    position: absolute;
+    top: 0; left: 25%; right: 25%;
+    height: 2px;
+    background: var(--border);
+  }
+
+  .branch-v-left, .branch-v-right {
+    position: absolute;
+    top: 0;
+    width: 2px; height: 30px;
+    background: var(--border);
+  }
+
+  .branch-v-left { left: 25%; }
+  .branch-v-right { right: 25%; }
+
+  /* Info boxes */
+  .info-row {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    max-width: 700px;
+    padding: 0.5rem 0;
+  }
+
+  .info-chip {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.72rem;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+  }
+
+  .info-chip strong {
+    color: var(--text);
+  }
+
+  /* Section label */
+  .section-label {
+    font-size: 0.65rem;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 1rem 0 0.4rem;
+    border-left: 2px solid var(--border);
+    padding-left: 0.6rem;
+    align-self: flex-start;
+    margin-left: calc((100% - 560px)/2);
+  }
+
+  @media (max-width: 600px) {
+    .section-label { margin-left: 0; }
+    .two-col { grid-template-columns: 1fr; }
+  }
+
+  /* Pulse animation on TF node */
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 30px rgba(0,212,255,0.15), 0 0 60px rgba(124,58,237,0.08); }
+    50% { box-shadow: 0 0 50px rgba(0,212,255,0.3), 0 0 100px rgba(124,58,237,0.2); }
+  }
+
+  .tf-node { animation: pulse-glow 3s ease-in-out infinite; }
+
+  /* Fade in */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .node, .tf-node, .two-col {
+    animation: fadeUp 0.5s ease both;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>TensorFlow in LLM Training</h1>
+  <p class="subtitle">// How TensorFlow powers models like LLaMA · ChatGPT · Gemini</p>
+</header>
+
+<div class="legend">
+  <div class="legend-item"><span class="legend-dot" style="background:var(--accent1)"></span> TensorFlow Core</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--accent2)"></span> Data Pipeline</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--accent3)"></span> Model Architecture</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--accent4)"></span> Optimization</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--accent5)"></span> Hardware</div>
+</div>
+
+<div class="diagram">
+
+  <!-- Step 1: Raw Data -->
+  <div class="section-label">① Input Pipeline</div>
+  <div class="node orange">
+    <span class="node-badge">input</span>
+    <div class="node-title">Raw Text Corpus</div>
+    <div class="node-sub">Books · Web Crawls · Code · Conversations</div>
+  </div>
+
+  <div class="arrow">
+    <div class="arrow-label">tokenize</div>
+    <div class="arrow-line"></div>
+    <div class="arrow-head"></div>
+  </div>
+
+  <div class="node orange">
+    <span class="node-badge">tf.data</span>
+    <div class="node-title">tf.data Pipeline</div>
+    <div class="node-sub">.tokenize() → .batch() → .prefetch() → .shuffle()</div>
+  </div>
+
+  <div class="arrow">
+    <div class="arrow-label">tensor batches</div>
+    <div class="arrow-line"></div>
+    <div class="arrow-head"></div>
+  </div>
+
+  <!-- Step 2: TensorFlow Core -->
+  <div class="section-label">② TensorFlow Core Engine</div>
+  <div class="tf-node">
+    <span class="tf-icon">⚡</span>
+    <div class="node-title">TensorFlow / Keras</div>
+    <div class="node-sub">Computational Graph · Eager Execution · Auto-differentiation (GradientTape)</div>
+  </div>
+
+  <!-- Branch connector -->
+  <div class="branch-connector">
+    <div class="branch-h-line"></div>
+    <div class="branch-v-left"></div>
+    <div class="branch-v-right"></div>
+  </div>
+
+  <!-- Step 3: Two parallel paths -->
+  <div class="section-label">③ Forward Pass → Loss → Backward Pass</div>
+  <div class="two-col">
+    <div class="node purple" style="animation-delay:0.1s">
+      <span class="node-badge">forward</span>
+      <div class="node-title">Transformer Model</div>
+      <div class="node-sub">Embeddings → Multi-Head Attention → FFN → LayerNorm<br><br>
+        <em style="opacity:0.6">LLaMA: Meta | GPT-4: OpenAI | Gemini: Google</em>
+      </div>
+    </div>
+    <div class="node yellow" style="animation-delay:0.2s">
+      <span class="node-badge">hardware</span>
+      <div class="node-title">Hardware Acceleration</div>
+      <div class="node-sub">GPU · TPU · Multi-Node<br><br>
+        tf.distribute.MirroredStrategy<br>
+        tf.distribute.TPUStrategy
+      </div>
+    </div>
+  </div>
+
+  <div class="merge-arrow">
+    <div class="merge-line"></div>
+    <div class="merge-arrowhead"></div>
+  </div>
+
+  <div class="node purple">
+    <span class="node-badge">loss</span>
+    <div class="node-title">Loss Computation</div>
+    <div class="node-sub">Cross-Entropy Loss = −Σ y·log(ŷ) &nbsp;|&nbsp; SparseCategoricalCrossentropy</div>
+  </div>
+
+  <div class="arrow">
+    <div class="arrow-label">GradientTape</div>
+    <div class="arrow-line"></div>
+    <div class="arrow-head"></div>
+  </div>
+
+  <div class="node blue">
+    <span class="node-badge">backward</span>
+    <div class="node-title">Backpropagation</div>
+    <div class="node-sub">tape.gradient(loss, model.trainable_variables) → compute ∂L/∂W for all layers</div>
+  </div>
+
+  <div class="arrow">
+    <div class="arrow-label">gradients</div>
+    <div class="arrow-line"></div>
+    <div class="arrow-head"></div>
+  </div>
+
+  <!-- Step 4: Optimizer -->
+  <div class="section-label">④ Optimization</div>
+  <div class="node green">
+    <span class="node-badge">optimizer</span>
+    <div class="node-title">Optimizer: Adam / AdamW</div>
+    <div class="node-sub">W = W − η · m̂/(√v̂ + ε) &nbsp;|&nbsp; tf.keras.optimizers.AdamW(lr, weight_decay)</div>
+  </div>
+
+  <div class="arrow">
+    <div class="arrow-label">updated weights</div>
+    <div class="arrow-line"></div>
+    <div class="arrow-head"></div>
+  </div>
+
+  <!-- Step 5: Checkpointing -->
+  <div class="node green">
+    <span class="node-badge">persist</span>
+    <div class="node-title">Checkpointing & Logging</div>
+    <div class="node-sub">tf.train.Checkpoint · TensorBoard · W&B · loss curves · grad norms</div>
+  </div>
+
+  <div class="arrow">
+    <div class="arrow-label">loop back</div>
+    <div class="arrow-line"></div>
+    <div class="arrow-head"></div>
+  </div>
+
+  <!-- Step 6: Repeat -->
+  <div class="node blue">
+    <span class="node-badge">iterate</span>
+    <div class="node-title">Repeat for N Steps / Epochs</div>
+    <div class="node-sub">LR Warmup → Cosine Decay → Convergence → Early Stopping</div>
+  </div>
+
+  <div class="arrow">
+    <div class="arrow-label">trained weights</div>
+    <div class="arrow-line"></div>
+    <div class="arrow-head"></div>
+  </div>
+
+  <!-- Step 7: Export -->
+  <div class="section-label">⑤ Export & Deploy</div>
+  <div class="node orange">
+    <span class="node-badge">output</span>
+    <div class="node-title">SavedModel / HuggingFace Export</div>
+    <div class="node-sub">tf.saved_model.save() → ONNX / TFLite / Triton → Inference Serving</div>
+  </div>
+
+  <!-- Chips row -->
+  <div style="height:1.5rem"></div>
+  <div class="info-row">
+    <div class="info-chip"><strong>LLaMA</strong> PyTorch-first, JAX variant</div>
+    <div class="info-chip"><strong>ChatGPT/GPT-4</strong> PyTorch internally</div>
+    <div class="info-chip"><strong>Gemini</strong> JAX + TensorFlow on TPUs</div>
+    <div class="info-chip"><strong>BERT/T5</strong> TF native (Google)</div>
+    <div class="info-chip"><strong>TF ↔ PyTorch</strong> Same math, diff API</div>
+  </div>
+
+</div>
+
+</body>
+</html>
